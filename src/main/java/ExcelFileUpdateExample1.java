@@ -21,6 +21,52 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  *
  */
 public class ExcelFileUpdateExample1 {
+	
+	public static void creacionArchivoInexistente(File archivoExcel) {
+		try {
+			System.out.println("Creación de nuevo archivo ya que no existe\n");
+			archivoExcel.createNewFile();
+			XSSFWorkbook workbook = new XSSFWorkbook();
+			workbook.createSheet();
+			
+			Sheet sheet = workbook.getSheetAt(0);
+
+			// Create file system using specific name
+			FileOutputStream out = new FileOutputStream(archivoExcel);
+
+			// Formatenado celdas
+			FileInputStream inputStream = new FileInputStream(archivoExcel);
+
+			Object[][] bookData = { { "No", "BookTitle", "Author", "Price" }, };
+
+			for (Object[] aBook : bookData) {
+				Row row = sheet.createRow(0);
+
+				int columnCount = -1;
+				Cell cell;
+				for (Object field : aBook) {
+					cell = row.createCell(++columnCount);
+					if (field instanceof String) {
+						cell.setCellValue((String) field);
+					} else if (field instanceof Integer) {
+						cell.setCellValue((Integer) field);
+					}
+				}
+
+			}
+
+			inputStream.close();
+
+			FileOutputStream outputStream = new FileOutputStream(archivoExcel.getPath());
+
+			workbook.write(out);
+			out.close();
+			System.out.println("Inventario.xlsx creado correctamente");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 
 	public static void main(String[] args) {
@@ -28,49 +74,7 @@ public class ExcelFileUpdateExample1 {
 		File archivoExcel = new File(excelFilePath);
 		//Creación y formato del nuevo archivo
 		if (!archivoExcel.exists()) {
-			try {
-				System.out.println("Creación de nuevo archivo ya que no existe\n");
-				archivoExcel.createNewFile();
-				XSSFWorkbook workbook = new XSSFWorkbook();
-				workbook.createSheet();
-				
-				Sheet sheet = workbook.getSheetAt(0);
-
-				// Create file system using specific name
-				FileOutputStream out = new FileOutputStream(archivoExcel);
-
-				// Formatenado celdas
-				FileInputStream inputStream = new FileInputStream(archivoExcel);
-
-				Object[][] bookData = { { "No", "BookTitle", "Author", "Price" }, };
-
-				for (Object[] aBook : bookData) {
-					Row row = sheet.createRow(0);
-
-					int columnCount = -1;
-					Cell cell;
-					for (Object field : aBook) {
-						cell = row.createCell(++columnCount);
-						if (field instanceof String) {
-							cell.setCellValue((String) field);
-						} else if (field instanceof Integer) {
-							cell.setCellValue((Integer) field);
-						}
-					}
-
-				}
-
-				inputStream.close();
-
-				FileOutputStream outputStream = new FileOutputStream(excelFilePath);
-
-				workbook.write(out);
-				out.close();
-				System.out.println("Inventario.xlsx creado correctamente");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			creacionArchivoInexistente(archivoExcel);
 		}
 		try {
 			FileInputStream inputStream = new FileInputStream(archivoExcel);
