@@ -1,7 +1,9 @@
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Scanner;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -117,7 +119,7 @@ public class ExcelFileUpdateExample1 {
 	 * 		-- Si se execeden los 30 registros en la hoja en la que se esta agregando, se crea
 	 * 		   una hoja adicional para agregar el resto.
 	 */
- 	private static void addRecords(Workbook workbook, Sheet sheet, int rowCount, Object[][] bookData) {
+ 	private static void addRecords(Workbook workbook, Sheet sheet, int rowCount, Object[][] bookData, String excelFilePath) {
 				
 		int columnCount = 0;
 		
@@ -160,6 +162,25 @@ public class ExcelFileUpdateExample1 {
 			}
 
 		}
+		FileOutputStream outputStream = null;;
+		try {
+			outputStream = new FileOutputStream(excelFilePath);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			workbook.write(outputStream);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			outputStream.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
  	
@@ -168,7 +189,7 @@ public class ExcelFileUpdateExample1 {
 	 * RETORNA: void
 	 * DESCRIPCION: Muestra los resultados de la operacion por consola.
 	 */
- 	private static void viewResults(Workbook workbook, FormulaEvaluator formulaEvaluator) {
+ 	private static void viewResults(Workbook workbook, FormulaEvaluator formulaEvaluator, String excelFilePath) {
 
 		int sheetCounter = 0;
 		for (Sheet hoja : workbook) {
@@ -192,14 +213,111 @@ public class ExcelFileUpdateExample1 {
 				}
 				System.out.println();
 			}
-			
-		} 
-
+			try {
+				workbook.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
  	}
  	
+	private static void menu(File archivoExcel) {
+		while (1 == 1) {
+			FileInputStream inputStream = null;
+			try {
+				inputStream = new FileInputStream(archivoExcel);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Workbook workbook = null;
+			try {
+				workbook = WorkbookFactory.create(inputStream);
+			} catch (EncryptedDocumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvalidFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			int availableSheet = getSheetSlot(workbook); // Obtengo el indice de la hoja que aun tiene menos de 30
+															// registros
+			Sheet sheet = workbook.getSheetAt(availableSheet); // Luego de obtener el indice, obtengo el objeto de la
+																// hoja
+			System.out.println("____________MENU____________\n");
+			System.out.println("1. Visualizar Archivo\n");
+			System.out.println("2. Agregar Registro\n");
+			System.out.println("3. Modificar Registro\n");
+			System.out.println("4. Salir");
+			int rowCount = sheet.getLastRowNum();
+			Scanner input = new Scanner(System.in);
+			int selection = input.nextInt();
+			String libro;
+			String autor;
+			int precio;
+			FormulaEvaluator formulaEvaluator;
+			switch (selection) {
+			case 1:
+				if (!archivoExcel.exists()) {
+					System.out.println("No existe");
+				}
+				else {
+					sheet = workbook.getSheetAt(0); // Obtengo 1era hoja para mostrar resultados desde el inicio
+					formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator(); 
+					viewResults(workbook, formulaEvaluator, archivoExcel.getPath());
+				}
+				break;
+			case 2:
+				if (!archivoExcel.exists()) {
+					creacionArchivoInexistente(archivoExcel);
+				}
+				System.out.println("\n\n\n\n\n\n\n");
+				System.out.println("Inserte título del libro: ");
+				libro = input.nextLine();
+				System.out.println("\n");
+				System.out.println("Inserte autor del libro: ");
+				autor = input.nextLine();
+				System.out.println("\n");
+				System.out.println("Inserte precio del libro: ");
+				precio = input.nextInt();
+				Object dataBook2[][] = {{ libro, autor, precio},};
+				addRecords(workbook, sheet, rowCount, dataBook2, archivoExcel.getPath());
+				sheet = workbook.getSheetAt(0); // Obtengo 1era hoja para mostrar resultados desde el inicio
+				formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator(); 
+				viewResults(workbook, formulaEvaluator, archivoExcel.getPath());
+				break;
+			case 3:
+				System.out.println("\n\n\n\n\n\n\n");
+				System.out.println("Inserte título del libro: ");
+				int rowModificationNumb = input.nextInt();
+				System.out.println("Inserte título del libro: ");
+				libro = input.nextLine();
+				System.out.println("\n");
+				System.out.println("Inserte autor del libro: ");
+				autor = input.nextLine();
+				System.out.println("\n");
+				System.out.println("Inserte precio del libro: ");
+				precio = input.nextInt();
+				Object[][] dataBook= {{libro, autor, precio}};
+				//AGREGA ACÁ MARCO EL MÉTODO DE MODIFICAR;
+				//----
+				//ARRIBA
+				sheet = workbook.getSheetAt(0); // Obtengo 1era hoja para mostrar resultados desde el inicio
+				formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator(); 
+				viewResults(workbook, formulaEvaluator, archivoExcel.getPath());
+				break;
+			}
+			if (selection == 4)
+				break;
+		}
+	}
  	
-	public static void main(String[] args) {
-		String excelFilePath = "Inventario.xlsx";
+ 	private static void codigo_principal() {
+ 		String excelFilePath = "Inventario.xlsx";
 		File archivoExcel = new File(excelFilePath);
 		// Creacion y formato del nuevo archivo en caso de que no exista en el directorio
 		if (!archivoExcel.exists()) {
@@ -223,9 +341,7 @@ public class ExcelFileUpdateExample1 {
 
 			int rowCount = sheet.getLastRowNum(); // Obtengo el No del ultimo registro de la hoja correspondiente
 
-			addRecords(workbook ,sheet, rowCount, bookData); // Agrego los registros
-
-			inputStream.close();
+			addRecords(workbook ,sheet, rowCount, bookData, archivoExcel.getPath()); // Agrego los registros
 
 			// Escritura en la consola
 			FileOutputStream outputStream = new FileOutputStream(excelFilePath);
@@ -233,14 +349,18 @@ public class ExcelFileUpdateExample1 {
 			sheet = workbook.getSheetAt(0); // Obtengo 1era hoja para mostrar resultados desde el inicio
 			FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator(); 
 			
-			viewResults(workbook, formulaEvaluator); // Mostrar resultados por consola 
-			
-			workbook.close();
-			outputStream.close();
+			viewResults(workbook, formulaEvaluator, archivoExcel.getPath()); // Mostrar resultados por consola 
 			
 		} catch (IOException | EncryptedDocumentException | InvalidFormatException ex) {
 			ex.printStackTrace();
 		}
+	}
+ 	
+ 	
+	public static void main(String[] args) {
+		String excelFilePath = "Inventario.xlsx";
+		File archivoExcel = new File(excelFilePath);
+		menu(archivoExcel);
 	}
 
 }
