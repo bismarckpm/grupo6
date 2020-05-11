@@ -222,6 +222,41 @@ public class ExcelFileUpdateExample1 {
 		}
  	}
  	
+private static void UpdateRecord (int rowModificationNumber, String autor, int precio, Workbook workbook, String excelFilePath) {
+		
+		Sheet sheet = workbook.getSheetAt(0);
+		if (sheet.getRow(rowModificationNumber) != null){ // condicion para verificar existencia de registro
+		Cell updateAuthor= sheet.getRow(rowModificationNumber).getCell(2); // nos ubicamos en la fila y columna correspondiente
+		updateAuthor.setCellValue(autor);//asignamos el nuevo valor de autor
+		Cell updatePrice= sheet.getRow(rowModificationNumber).getCell(3);// nos ubicamos en la fila y columna correspondiente
+		updatePrice.setCellValue(precio);//asignamos el nuevo valor de precio
+		}
+		else 
+			System.out.println("El numero de registro que ingreso, es inexistente");
+	
+          FileOutputStream outputStream = null;;
+  		try {
+  			outputStream = new FileOutputStream(excelFilePath);
+  		} catch (FileNotFoundException e) {
+  			// TODO Auto-generated catch block
+  			e.printStackTrace();
+  		}
+  		try {
+  			workbook.write(outputStream);
+  		} catch (IOException e) {
+  			// TODO Auto-generated catch block
+  			e.printStackTrace();
+  		}
+  		try {
+  			outputStream.close();
+  		} catch (IOException e) {
+  			// TODO Auto-generated catch block
+  			e.printStackTrace();
+  		}
+  		
+ 	}
+
+ 	
 	private static void menu(File archivoExcel) {
 		while (1 == 1) {
 			FileInputStream inputStream = null;
@@ -290,27 +325,27 @@ public class ExcelFileUpdateExample1 {
 				formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator(); 
 				viewResults(workbook, formulaEvaluator, archivoExcel.getPath());
 				break;
-			case 3:
+
+case 3:
 				System.out.println("\n\n\n\n\n\n\n");
-				System.out.println("Inserte título del libro: ");
+				System.out.println("Inserte numero registro del libro: ");
 				int rowModificationNumb = input.nextInt();
-				System.out.println("Inserte título del libro: ");
-				libro = input.nextLine();
 				System.out.println("\n");
 				System.out.println("Inserte autor del libro: ");
+				autor = input.nextLine();
 				autor = input.nextLine();
 				System.out.println("\n");
 				System.out.println("Inserte precio del libro: ");
 				precio = input.nextInt();
-				Object[][] dataBook= {{libro, autor, precio}};
 				//AGREGA ACÁ MARCO EL MÉTODO DE MODIFICAR;
-				//----
+				UpdateRecord(rowModificationNumb, autor, precio, workbook, archivoExcel.getPath());
 				//ARRIBA
 				sheet = workbook.getSheetAt(0); // Obtengo 1era hoja para mostrar resultados desde el inicio
 				formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator(); 
 				viewResults(workbook, formulaEvaluator, archivoExcel.getPath());
 				break;
 			}
+
 			if (selection == 4)
 				break;
 		}
